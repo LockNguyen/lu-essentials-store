@@ -43,6 +43,12 @@ export const useProductStore = defineStore('product', () => {
     return result
   })
 
+  const productCategoryList = computed(() => {
+    let categories = new Set(products.value.map((p) => p.category))
+    let sortedCategories = Array.from(categories).sort()
+    return [ALL_CATEGORIES, ...sortedCategories]
+  })
+
   // actions
   async function loadProducts() {
     try {
@@ -115,5 +121,5 @@ export const useProductStore = defineStore('product', () => {
   }
 
   // exports
-  return { products, filteredProductList, loadProducts, addProduct, updateStock, removeProduct }
+  return { products, filteredProductList, productCategoryList, loadProducts, addProduct, updateStock, removeProduct }
 })
