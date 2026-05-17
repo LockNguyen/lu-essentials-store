@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { ALL_CATEGORIES } from '@/types'
 
 export const useFiltersStore = defineStore('filters', () => {
@@ -10,7 +10,9 @@ export const useFiltersStore = defineStore('filters', () => {
   const inStockOnly = ref(false)
 
   // getters
-  const normalizedSearchQuery = searchQuery.value.trim().toLowerCase()
+  const normalizedSearchQuery = computed(() => {
+    return searchQuery.value.trim().toLowerCase() ?? ''
+  })
 
   // actions
   function resetFilters() {
