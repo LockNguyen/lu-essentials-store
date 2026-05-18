@@ -61,7 +61,11 @@ a,
   --color-success-border: #86efac;
   --radius: 6px;
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-  font-family: system-ui, -apple-system, sans-serif;
+  --shadow-lg: 0 1px 50px rgba(0, 0, 0, 0.5);
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
   font-size: 16px;
   color: var(--color-text);
   background: var(--color-bg);
@@ -177,7 +181,9 @@ a,
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
   white-space: nowrap;
   background: none;
 }
@@ -221,7 +227,7 @@ a,
   border-radius: var(--radius);
   padding: 1.25rem;
   margin-bottom: 1.5rem;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-lg);
 }
 
 .section-heading {

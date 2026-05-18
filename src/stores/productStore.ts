@@ -17,10 +17,12 @@ export const useProductStore = defineStore('product', () => {
   // getters
   const filteredProductList = computed(() => {
     let result = [...products.value]
-    
+
     // Filter: name
     if (filtersStore.normalizedSearchQuery) {
-      result = result.filter((p) => p.name.toLowerCase().includes(filtersStore.normalizedSearchQuery))
+      result = result.filter((p) =>
+        p.name.toLowerCase().includes(filtersStore.normalizedSearchQuery),
+      )
     }
 
     // Filter: category
@@ -64,7 +66,7 @@ export const useProductStore = defineStore('product', () => {
     if (!newProduct.name.trim()) {
       validationErrors.push('Name is required.')
     }
-    
+
     if (newProduct.price <= 0) {
       validationErrors.push('Price must be a finite number greater than 0.')
     }
@@ -74,7 +76,7 @@ export const useProductStore = defineStore('product', () => {
     }
 
     if (validationErrors.length > 0) {
-      throw new Error(validationErrors.join(';'))
+      throw new Error(validationErrors.join('; '))
     }
 
     products.value.push({
@@ -85,11 +87,11 @@ export const useProductStore = defineStore('product', () => {
       createdAt: Date.now(),
     })
   }
-  
+
   function updateStock(productId: string, newStockValue: number) {
     const validationErrors: string[] = []
     const product = products.value.find((p) => p.id === productId)
-  
+
     if (!product) {
       validationErrors.push(`updateStock: productId "${productId} not found.`)
     }
@@ -99,7 +101,7 @@ export const useProductStore = defineStore('product', () => {
     }
 
     if (validationErrors.length > 0) {
-      throw new Error(validationErrors.join(';'))
+      throw new Error(validationErrors.join('; '))
     }
 
     product!.stock = newStockValue
@@ -108,18 +110,26 @@ export const useProductStore = defineStore('product', () => {
   function removeProduct(productId: string) {
     const validationErrors: string[] = []
     const productIndex = products.value.findIndex((p) => p.id === productId)
-  
+
     if (productIndex === -1) {
       validationErrors.push(`removeProduct: productId "${productId} not found.`)
     }
 
     if (validationErrors.length > 0) {
-      throw new Error(validationErrors.join(';'))
+      throw new Error(validationErrors.join('; '))
     }
 
-    products.value = products.value.splice(productIndex, 1)
+    products.value.splice(productIndex, 1)
   }
 
   // exports
-  return { products, filteredProductList, productCategoryList, loadProducts, addProduct, updateStock, removeProduct }
+  return {
+    products,
+    filteredProductList,
+    productCategoryList,
+    loadProducts,
+    addProduct,
+    updateStock,
+    removeProduct,
+  }
 })
