@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { useProductStore } from '@/stores/productStore'
 import { formatPrice } from '@/helpers/priceFormatter'
+import InlineEditor from './ui_elements/InlineStockEditor.vue'
 
+// store imports
 const productStore = useProductStore()
 </script>
 
@@ -32,7 +34,12 @@ const productStore = useProductStore()
           <td>{{ product.category }}</td>
           <td>{{ formatPrice(product.price) }}</td>
           <td>
-            <span>{{ product.stock }}</span>
+            <InlineEditor
+              :key="product.id"
+              :product-id="product.id"
+              :original-stock-value="product.stock"
+              :handle-submit="productStore.updateStock"
+            />
             <span v-if="product.stock === 0" class="badge badge--danger"> Out-of-stock </span>
           </td>
           <td>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useProductStore } from '@/stores/productStore'
-import ButtonWithIcon from './ButtonWithIcon.vue'
+import ButtonWithIcon from './ui_elements/ButtonWithIcon.vue'
 
 // store imports
 const productStore = useProductStore()
@@ -63,7 +63,6 @@ function handleSubmit() {
           <input
             id="search-input"
             class="input"
-            type="number"
             v-model="productPrice"
             placeholder="Type product price..."
           />
@@ -74,7 +73,6 @@ function handleSubmit() {
           <input
             id="search-input"
             class="input"
-            type="number"
             v-model="productStock"
             placeholder="Type product stock..."
           />

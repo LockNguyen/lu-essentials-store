@@ -5,7 +5,7 @@ import { useProductStore } from '@/stores/productStore'
 import FilterBar from '@/components/Filters.vue'
 import ProductTable from '@/components/ProductTable.vue'
 import ProductForm from '@/components/ProductForm.vue'
-import ButtonWithIcon from '@/components/ButtonWithIcon.vue'
+import ButtonWithIcon from '@/components/ui_elements/ButtonWithIcon.vue'
 
 // store imports
 const productStore = useProductStore()
