@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+
 const props = defineProps<{
   productId: string
   originalStockValue: number
@@ -16,7 +19,6 @@ function startEditing() {
 }
 
 function finishEditing() {
-  // prevent double submit due to pressing Enter key, which fires both v-on listeners
   if (isSubmitting.value) return
   isSubmitting.value = true // block double submissions
 
@@ -27,20 +29,36 @@ function finishEditing() {
     isSubmitting.value = false
   }
 }
+
+function cancelEditing() {
+  newStockValue.value = props.originalStockValue
+  isEditing.value = false
+}
 </script>
 
 <template>
-  <div style="border-radius: 10px">
-    <input
+  <div class="inline-flex items-center">
+    <Input
       v-if="isEditing"
-      autofocus="true"
-      id="search-input"
-      class="input"
       v-model.number="newStockValue"
+      class="h-8 w-24"
+      aria-label="Edit stock"
+      autofocus="true"
       @blur="finishEditing"
       @keyup.enter="finishEditing"
+      @keyup.esc="cancelEditing"
     />
 
-    <span v-else @click="startEditing">{{ originalStockValue }}</span>
+    <Button
+      v-else
+      type="button"
+      variant="ghost"
+      size="sm"
+      class="h-8 px-2"
+      title="Click to edit stock"
+      @click="startEditing"
+    >
+      {{ originalStockValue }}
+    </Button>
   </div>
 </template>

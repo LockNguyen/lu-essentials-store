@@ -9,6 +9,7 @@ import { ALL_CATEGORIES } from '@/types'
 export const useProductStore = defineStore('product', () => {
   // states
   const products = ref<Product[]>([])
+  const isLoading = ref(false)
   const error = ref<string | null>(null)
 
   // dependencies
@@ -56,10 +57,13 @@ export const useProductStore = defineStore('product', () => {
 
   // actions
   async function loadProducts() {
+    isLoading.value = true
     try {
       products.value = await fetchProducts()
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Failed to load products.'
+    } finally {
+      isLoading.value = false
     }
   }
 
@@ -132,6 +136,8 @@ export const useProductStore = defineStore('product', () => {
   // exports
   return {
     products,
+    isLoading,
+    error,
     filteredProductList,
     productCategoryList,
     loadProducts,

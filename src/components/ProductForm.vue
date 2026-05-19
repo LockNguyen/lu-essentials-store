@@ -1,7 +1,19 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useProductStore } from '@/stores/productStore'
-import ButtonWithIcon from '@/components/uiElements/ButtonWithIcon.vue'
+
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 // store imports
 const productStore = useProductStore()
@@ -31,57 +43,58 @@ function handleSubmit() {
 </script>
 
 <template>
-  <section>
-    <div class="product-form">
-      <h1>Add a new Product</h1>
-      <div class="form-grid">
-        <ButtonWithIcon text="X" @click="emit('canceled')" />
-        <div class="form-group">
-          <label for="search-input" class="filter-label">Name</label>
-          <input
-            id="search-input"
-            class="input"
-            type="text"
+  <Dialog :open="true" @update:open="(open) => !open && emit('canceled')">
+    <DialogContent class="sm:max-w-lg">
+      <DialogHeader>
+        <DialogTitle>Add a new product</DialogTitle>
+        <DialogDescription> Fill out the product details below. </DialogDescription>
+      </DialogHeader>
+
+      <form class="grid gap-4" @submit.prevent="handleSubmit">
+        <div class="grid gap-2">
+          <Label for="product-name">Name</Label>
+          <Input
+            id="product-name"
             v-model="productName"
+            type="text"
             placeholder="Type product name…"
           />
         </div>
 
-        <div class="form-group">
-          <label for="search-input" class="filter-label">Category</label>
-          <input
-            id="search-input"
-            class="input"
-            type="text"
+        <div class="grid gap-2">
+          <Label for="product-category">Category</Label>
+          <Input
+            id="product-category"
             v-model="productCategory"
+            type="text"
             placeholder="Type product category..."
           />
         </div>
 
-        <div class="form-group">
-          <label for="search-input" class="filter-label">Price</label>
-          <input
-            id="search-input"
-            class="input"
+        <div class="grid gap-2">
+          <Label for="product-price">Price</Label>
+          <Input
+            id="product-price"
             v-model.number="productPrice"
             placeholder="Type product price..."
           />
         </div>
 
-        <div class="form-group">
-          <label for="search-input" class="filter-label">Stock</label>
-          <input
-            id="search-input"
-            class="input"
+        <div class="grid gap-2">
+          <Label for="product-stock">Stock</Label>
+          <Input
+            id="product-stock"
             v-model.number="productStock"
             placeholder="Type product stock..."
           />
         </div>
 
-        <div class="form-group">
-          <ButtonWithIcon id="search-input" text="Submit" @click="handleSubmit" />
-        </div>
-      </div>
-    </div>
-  </section>
+        <DialogFooter>
+          <Button type="button" variant="outline" @click="emit('canceled')"> Cancel </Button>
+
+          <Button type="submit"> Submit </Button>
+        </DialogFooter>
+      </form>
+    </DialogContent>
+  </Dialog>
 </template>

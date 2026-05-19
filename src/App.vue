@@ -1,19 +1,15 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
+import { RouterView } from 'vue-router'
+
+import NavBar from './components/uiElements/NavBar.vue'
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
+  <div class="min-h-screen bg-background text-foreground">
+    <NavBar />
 
-    <div class="wrapper">
-      <!-- TODO: Add banner -->
-
-      <nav>
-        <RouterLink to="/">Products</RouterLink>
-      </nav>
-    </div>
-  </header>
-
-  <RouterView />
+    <main class="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <RouterView />
+    </main>
+  </div>
 </template>
