@@ -35,7 +35,7 @@ function handleSubmit() {
     <div class="product-form">
       <h1>Add a new Product</h1>
       <div class="form-grid">
-        <ButtonWithIcon type="button" text="X" @click="emit('canceled')" />
+        <ButtonWithIcon text="X" @click="emit('canceled')" />
         <div class="form-group">
           <label for="search-input" class="filter-label">Name</label>
           <input
@@ -79,7 +79,7 @@ function handleSubmit() {
         </div>
 
         <div class="form-group">
-          <ButtonWithIcon id="search-input" type="button" text="Submit" @click="handleSubmit" />
+          <ButtonWithIcon id="search-input" text="Submit" @click="handleSubmit" />
         </div>
       </div>
     </div>

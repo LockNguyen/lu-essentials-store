@@ -31,7 +31,7 @@ onMounted(() => {
   <main>
     <div class="page-headline">
       <h1>Products</h1>
-      <ButtonWithIcon type="button" text="+ Add New" @click="openProductForm" />
+      <ButtonWithIcon text="+ Add New" @click="openProductForm" />
     </div>
     <FilterBar />
     <ProductTable />

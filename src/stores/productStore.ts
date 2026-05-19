@@ -49,8 +49,8 @@ export const useProductStore = defineStore('product', () => {
   })
 
   const productCategoryList = computed(() => {
-    let categories = new Set(products.value.map((p) => p.category))
-    let sortedCategories = Array.from(categories).sort()
+    const categories = new Set(products.value.map((p) => p.category))
+    const sortedCategories = Array.from(categories).sort()
     return [ALL_CATEGORIES, ...sortedCategories]
   })
 
