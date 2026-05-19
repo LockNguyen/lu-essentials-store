@@ -6,7 +6,7 @@ export const useFiltersStore = defineStore('filters', () => {
   // states
   const searchQuery = ref('')
   const category = ref<string>(ALL_CATEGORIES)
-  const sortDirection = ref<'asc' | 'desc'>('asc')
+  const sortDirection = ref<'none' | 'asc' | 'desc'>('none')
   const inStockOnly = ref(false)
 
   // getters
@@ -18,7 +18,7 @@ export const useFiltersStore = defineStore('filters', () => {
   function resetFilters() {
     searchQuery.value = ''
     category.value = ALL_CATEGORIES
-    sortDirection.value = 'asc'
+    sortDirection.value = 'none'
     inStockOnly.value = false
   }
 

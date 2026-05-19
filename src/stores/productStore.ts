@@ -35,10 +35,13 @@ export const useProductStore = defineStore('product', () => {
       result = result.filter((p) => p.stock > 0)
     }
 
+    // Sort: createdat
+    result.sort((a, b) => a.createdAt - b.createdAt)
+
     // Sort: price
     if (filtersStore.sortDirection === 'asc') {
       result.sort((a, b) => a.price - b.price)
-    } else {
+    } else if (filtersStore.sortDirection === 'desc') {
       result.sort((a, b) => b.price - a.price)
     }
 
@@ -67,11 +70,15 @@ export const useProductStore = defineStore('product', () => {
       validationErrors.push('Name is required.')
     }
 
-    if (newProduct.price <= 0) {
+    if (!Number.isFinite(newProduct.stock) || newProduct.price <= 0) {
       validationErrors.push('Price must be a finite number greater than 0.')
     }
 
-    if (!Number.isInteger(newProduct.stock) || newProduct.stock < 0) {
+    if (
+      !Number.isInteger(newProduct.stock) ||
+      !Number.isFinite(newProduct.stock) ||
+      newProduct.stock < 0
+    ) {
       validationErrors.push('Stock must be a non-negative whole number.')
     }
 
@@ -96,7 +103,7 @@ export const useProductStore = defineStore('product', () => {
       validationErrors.push(`updateStock: productId "${productId} not found.`)
     }
 
-    if (!Number.isInteger(newStockValue) || newStockValue < 0) {
+    if (!Number.isInteger(newStockValue) || !Number.isFinite(newStockValue) || newStockValue < 0) {
       validationErrors.push('updateStock: stock must be a non-negative whole number.')
     }
 

@@ -2,6 +2,7 @@
 import { useFiltersStore } from '@/stores/filtersStore'
 import { useProductStore } from '@/stores/productStore'
 
+// store imports
 const filtersStore = useFiltersStore()
 const productStore = useProductStore()
 </script>
@@ -35,6 +36,7 @@ const productStore = useProductStore()
     <div class="filter-group">
       <label for="sort-select" class="filter-label">Sort by price</label>
       <select id="sort-select" class="input" v-model="filtersStore.sortDirection">
+        <option value="none">None</option>
         <option value="asc">Price: Low → High</option>
         <option value="desc">Price: High → Low</option>
       </select>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useProductStore } from '@/stores/productStore'
-import ButtonWithIcon from './ui_elements/ButtonWithIcon.vue'
+import ButtonWithIcon from '@/components/uiElements/ButtonWithIcon.vue'
 
 // store imports
 const productStore = useProductStore()
@@ -14,7 +14,7 @@ const productStock = ref<number>(0)
 
 const emit = defineEmits<{
   created: []
-  cancel: []
+  canceled: []
 }>()
 
 // helpers
@@ -35,7 +35,7 @@ function handleSubmit() {
     <div class="product-form">
       <h1>Add a new Product</h1>
       <div class="form-grid">
-        <ButtonWithIcon type="button" text="X" @click="emit('cancel')" />
+        <ButtonWithIcon type="button" text="X" @click="emit('canceled')" />
         <div class="form-group">
           <label for="search-input" class="filter-label">Name</label>
           <input
@@ -63,7 +63,7 @@ function handleSubmit() {
           <input
             id="search-input"
             class="input"
-            v-model="productPrice"
+            v-model.number="productPrice"
             placeholder="Type product price..."
           />
         </div>
@@ -73,7 +73,7 @@ function handleSubmit() {
           <input
             id="search-input"
             class="input"
-            v-model="productStock"
+            v-model.number="productStock"
             placeholder="Type product stock..."
           />
         </div>

@@ -5,7 +5,7 @@ import { useProductStore } from '@/stores/productStore'
 import FilterBar from '@/components/Filters.vue'
 import ProductTable from '@/components/ProductTable.vue'
 import ProductForm from '@/components/ProductForm.vue'
-import ButtonWithIcon from '@/components/ui_elements/ButtonWithIcon.vue'
+import ButtonWithIcon from '@/components/uiElements/ButtonWithIcon.vue'
 
 // store imports
 const productStore = useProductStore()
@@ -20,8 +20,10 @@ function closeProductForm() {
 }
 
 onMounted(() => {
-  // TODO: Only fetch products from database if persistedStatePlugin hasn't loaded it from localStorage
-  productStore.loadProducts()
+  // Only fetch products from database if persistedStatePlugin hasn't loaded products from localStorage already
+  if (productStore.products.length === 0) {
+    productStore.loadProducts()
+  }
 })
 </script>
 
@@ -33,6 +35,10 @@ onMounted(() => {
     </div>
     <FilterBar />
     <ProductTable />
-    <ProductForm v-if="isProductFormOpen" @created="closeProductForm" @cancel="closeProductForm" />
+    <ProductForm
+      v-if="isProductFormOpen"
+      @created="closeProductForm"
+      @canceled="closeProductForm"
+    />
   </main>
 </template>

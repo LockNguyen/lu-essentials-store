@@ -18,13 +18,14 @@ function startEditing() {
 function finishEditing() {
   // prevent double submit due to pressing Enter key, which fires both v-on listeners
   if (isSubmitting.value) return
+  isSubmitting.value = true // block double submissions
 
-  isSubmitting.value = true
-  props.handleSubmit(props.productId, newStockValue.value)
-
-  // reset
-  isSubmitting.value = false
-  isEditing.value = false
+  try {
+    props.handleSubmit(props.productId, newStockValue.value)
+    isEditing.value = false
+  } finally {
+    isSubmitting.value = false
+  }
 }
 </script>
 
@@ -35,7 +36,7 @@ function finishEditing() {
       autofocus="true"
       id="search-input"
       class="input"
-      v-model="newStockValue"
+      v-model.number="newStockValue"
       @blur="finishEditing"
       @keyup.enter="finishEditing"
     />

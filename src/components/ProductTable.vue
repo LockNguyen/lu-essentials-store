@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useProductStore } from '@/stores/productStore'
 import { formatPrice } from '@/helpers/priceFormatter'
-import InlineEditor from './ui_elements/InlineStockEditor.vue'
+import InlineEditor from '@/components/uiElements/InlineStockEditor.vue'
 
 // store imports
 const productStore = useProductStore()
