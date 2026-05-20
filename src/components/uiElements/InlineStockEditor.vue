@@ -3,13 +3,15 @@ import { ref } from 'vue'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { toast } from 'vue-sonner'
 
 const props = defineProps<{
   productId: string
   productName: string
   originalStockValue: number
-  handleSubmit: (productId: string, newStockValue: number) => void
+}>()
+
+const emit = defineEmits<{
+  'stock-update': [productId: string, newStockValue: number]
 }>()
 
 const newStockValue = ref(props.originalStockValue)
@@ -22,13 +24,11 @@ function startEditing() {
 
 function finishEditing() {
   if (isSubmitting.value) return
-  isSubmitting.value = true // block double submissions
+  isSubmitting.value = true // boolean lock to prevent double submissions
 
   try {
-    props.handleSubmit(props.productId, newStockValue.value)
+    emit('stock-update', props.productId, newStockValue.value)
     isEditing.value = false
-  } catch (error) {
-    toast.error(error instanceof Error ? error.message : 'Could not submit.')
   } finally {
     isSubmitting.value = false
   }

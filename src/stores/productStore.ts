@@ -27,8 +27,6 @@ export const useProductStore = defineStore('product', () => {
   const isAwaitingFetch = ref(false)
   const isAwaitingSave = ref(false)
 
-  const error = ref<string | null>(null)
-
   // dependencies
   const filtersStore = useFiltersStore()
 
@@ -133,7 +131,6 @@ export const useProductStore = defineStore('product', () => {
   }
 
   function addProduct(newProduct: Omit<Product, 'id' | 'createdAt'>): boolean {
-    console.log('inside store addProduct')
     try {
       // Value validation
       if (!newProduct.name.trim()) {
@@ -304,7 +301,6 @@ export const useProductStore = defineStore('product', () => {
     pendingStockUpdates,
     isAwaitingFetch,
     isAwaitingSave,
-    error,
     productsWithPendingStatus,
     filteredProductList,
     productCategoryList,

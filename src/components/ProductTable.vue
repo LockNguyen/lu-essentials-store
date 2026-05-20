@@ -114,7 +114,7 @@ const productStore = useProductStore()
                   :product-id="product.id"
                   :product-name="product.name"
                   :original-stock-value="product.stock"
-                  :handle-submit="productStore.updateStock"
+                  @stock-update="productStore.updateStock"
                 />
 
                 <Badge
