@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Trash2 } from 'lucide-vue-next'
+import { LOW_STOCK_THRESHOLD } from '@/types'
 import InlineEditor from '@/components/uiElements/InlineStockEditor.vue'
 
 // store imports
@@ -49,7 +50,11 @@ const productStore = useProductStore()
             v-for="product in productStore.filteredProductList"
             :key="product.id"
             :class="{
-              'bg-destructive/5': product.stock === 0 && product.pendingStatus !== 'deleted',
+              'bg-destructive/10': product.stock === 0 && product.pendingStatus !== 'deleted',
+              'bg-amber-400/10':
+                product.stock > 0 &&
+                product.stock <= LOW_STOCK_THRESHOLD &&
+                product.pendingStatus !== 'deleted',
             }"
           >
             <TableCell class="font-medium pl-4">
@@ -113,6 +118,18 @@ const productStore = useProductStore()
                   variant="destructive"
                 >
                   Out-of-stock
+                </Badge>
+
+                <Badge
+                  v-if="
+                    product.stock > 0 &&
+                    product.stock <= LOW_STOCK_THRESHOLD &&
+                    product.pendingStatus !== 'deleted'
+                  "
+                  variant="default"
+                  class="bg-amber-500"
+                >
+                  Low-stock
                 </Badge>
               </div>
             </TableCell>
