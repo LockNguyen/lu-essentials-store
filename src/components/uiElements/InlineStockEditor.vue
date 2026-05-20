@@ -3,6 +3,7 @@ import { ref } from 'vue'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { toast } from 'vue-sonner'
 
 const props = defineProps<{
   productId: string
@@ -25,6 +26,8 @@ function finishEditing() {
   try {
     props.handleSubmit(props.productId, newStockValue.value)
     isEditing.value = false
+  } catch (error) {
+    toast.error(error instanceof Error ? error.message : 'Could not submit.')
   } finally {
     isSubmitting.value = false
   }

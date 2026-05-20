@@ -5,11 +5,12 @@ import {
   bulkUpdateStocksInDatabase,
   fetchProductsFromDatabase,
 } from '@/services/productService'
+import { useFiltersStore } from '@/stores/filtersStore'
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { ALL_CATEGORIES } from '@/types'
-import { useFiltersStore } from '@/stores/filtersStore'
+import { toast } from 'vue-sonner'
 
 export type ProductWithPendingStatus = Product & {
   pendingStatus: 'added' | 'stockUpdated' | 'deleted' | 'unchanged'
@@ -28,6 +29,7 @@ export const useProductStore = defineStore('product', () => {
 
   const error = ref<string | null>(null)
 
+  // dependencies
   const filtersStore = useFiltersStore()
 
   // getters
@@ -123,105 +125,113 @@ export const useProductStore = defineStore('product', () => {
     isAwaitingFetch.value = true
     try {
       products.value = await fetchProductsFromDatabase()
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : 'loadProducts: Failed to load products.'
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to load products.')
     } finally {
       isAwaitingFetch.value = false
     }
   }
 
-  function addProduct(newProduct: Omit<Product, 'id' | 'createdAt'>) {
-    // Value validation
-    const validationErrors: string[] = []
+  function addProduct(newProduct: Omit<Product, 'id' | 'createdAt'>): boolean {
+    console.log('inside store addProduct')
+    try {
+      // Value validation
+      if (!newProduct.name.trim()) {
+        throw new Error('Product name is required.')
+      }
 
-    if (!newProduct.name.trim()) {
-      validationErrors.push('addProduct: Name is required.')
+      if (!Number.isFinite(newProduct.price) || newProduct.price <= 0) {
+        throw new Error('Price must be a finite number greater than 0.')
+      }
+
+      if (
+        !Number.isInteger(newProduct.stock) ||
+        !Number.isFinite(newProduct.stock) ||
+        newProduct.stock < 0
+      ) {
+        throw new Error('Stock must be a non-negative whole number.')
+      }
+
+      // Add the product to the pending addition list
+      pendingProductsToAdd.value.push({
+        ...newProduct,
+        id: crypto.randomUUID(),
+        name: newProduct.name.trim(),
+        category: newProduct.category.trim() || 'Uncategorized',
+        createdAt: Date.now(),
+      })
+
+      return true
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not create product.')
+      return false
     }
-
-    if (!Number.isFinite(newProduct.price) || newProduct.price <= 0) {
-      validationErrors.push('addProduct: Price must be a finite number greater than 0.')
-    }
-
-    if (
-      !Number.isInteger(newProduct.stock) ||
-      !Number.isFinite(newProduct.stock) ||
-      newProduct.stock < 0
-    ) {
-      validationErrors.push('addProduct: Stock must be a non-negative whole number.')
-    }
-
-    if (validationErrors.length > 0) {
-      throw new Error(validationErrors.join('; '))
-    }
-
-    // Add the product to the pending addition list
-    pendingProductsToAdd.value.push({
-      ...newProduct,
-      id: crypto.randomUUID(),
-      name: newProduct.name.trim(),
-      category: newProduct.category.trim() || 'Uncategorized',
-      createdAt: Date.now(),
-    })
   }
 
   function updateStock(productId: string, newStockValue: number) {
-    // Value validation
-    const validationErrors: string[] = []
+    try {
+      // Value validation
+      if (
+        !Number.isInteger(newStockValue) ||
+        !Number.isFinite(newStockValue) ||
+        newStockValue < 0
+      ) {
+        throw new Error('Stock must be a non-negative whole number.')
+      }
 
-    if (!Number.isInteger(newStockValue) || !Number.isFinite(newStockValue) || newStockValue < 0) {
-      validationErrors.push('updateStock: stock must be a non-negative whole number.')
+      // 1. If the product is in the pending addition list, update its stock directly
+      const newProduct = pendingProductsToAdd.value.find((p) => p.id === productId)
+
+      if (newProduct) {
+        newProduct.stock = newStockValue
+        return
+      }
+
+      // 2. If the product's stock value hasn't changed, remove it from the pending update list
+      const product = products.value.find((p) => p.id === productId)
+
+      if (!product) {
+        throw new Error(`ProductId is not found.`)
+      }
+
+      if (product.stock === newStockValue) {
+        delete pendingStockUpdates.value[productId]
+        return
+      }
+
+      // 3. If the product currently exists, add the change to the pending update list
+      pendingStockUpdates.value[productId] = newStockValue
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not update stock.')
     }
-
-    if (validationErrors.length > 0) {
-      throw new Error(validationErrors.join('; '))
-    }
-
-    // 1. If the product is in the pending addition list, update its stock directly
-    const newProduct = pendingProductsToAdd.value.find((p) => p.id === productId)
-
-    if (newProduct) {
-      newProduct.stock = newStockValue
-      return
-    }
-
-    // 2. If the product's stock value hasn't changed, remove it from the pending update list
-    const product = products.value.find((p) => p.id === productId)
-
-    if (!product) {
-      throw new Error(`updateStock: productId "${productId}" not found.`)
-    }
-
-    if (product.stock === newStockValue) {
-      delete pendingStockUpdates.value[productId]
-      return
-    }
-
-    // 3. If the product currently exists, add the change to the pending update list
-    pendingStockUpdates.value[productId] = newStockValue
   }
 
   function removeProduct(productId: string) {
-    // 1. If the product is in the pending addition list, remove it directly
-    const newProduct = pendingProductsToAdd.value.find((p) => p.id === productId)
+    try {
+      // 1. If the product is in the pending addition list, remove it directly
+      const newProduct = pendingProductsToAdd.value.find((p) => p.id === productId)
 
-    if (newProduct) {
-      pendingProductsToAdd.value = pendingProductsToAdd.value.filter((p) => p.id !== productId)
-      return
+      if (newProduct) {
+        pendingProductsToAdd.value = pendingProductsToAdd.value.filter((p) => p.id !== productId)
+        return
+      }
+
+      // 2. If the product currently exists, add it to the pending removal list
+      const product = products.value.find((p) => p.id === productId)
+
+      if (!product) {
+        throw new Error(`ProductId is not found.`)
+      }
+
+      pendingProductIdsToRemove.value.add(productId)
+
+      // 3. If the product has a pending stock update, remove that update
+      const remainingStockUpdates = { ...pendingStockUpdates.value }
+      delete remainingStockUpdates[productId]
+      pendingStockUpdates.value = remainingStockUpdates
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not update stock.')
     }
-
-    // 2. If the product currently exists, add it to the pending removal list
-    const product = products.value.find((p) => p.id === productId)
-
-    if (!product) {
-      throw new Error(`removeProduct: productId "${productId}" not found.`)
-    }
-
-    pendingProductIdsToRemove.value.add(productId)
-
-    // 3. If the product has a pending stock update, remove that update
-    const remainingStockUpdates = { ...pendingStockUpdates.value }
-    delete remainingStockUpdates[productId]
-    pendingStockUpdates.value = remainingStockUpdates
   }
 
   function clearChanges() {
@@ -279,9 +289,8 @@ export const useProductStore = defineStore('product', () => {
       ]
 
       clearChanges()
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Failed to save products.'
-      throw e
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to save products.')
     } finally {
       isAwaitingSave.value = false
     }

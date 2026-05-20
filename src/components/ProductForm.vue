@@ -31,14 +31,16 @@ const emit = defineEmits<{
 
 // helpers
 function handleSubmit() {
-  productStore.addProduct({
+  const success = productStore.addProduct({
     name: productName.value,
     category: productCategory.value,
     price: productPrice.value,
     stock: productStock.value,
   })
 
-  emit('created')
+  if (success) {
+    emit('created')
+  }
 }
 </script>
 
