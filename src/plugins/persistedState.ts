@@ -1,28 +1,35 @@
 import type { PiniaPlugin } from 'pinia'
+import { persistedStateConfig } from '@/plugins/persistedState.config'
 
 export const persistedStatePlugin: PiniaPlugin = ({ store }) => {
-  // rehydration (loading from localStorage)
+  const storageKey = `pinia:${store.$id}`
+  const fieldsToPersist = persistedStateConfig[store.$id as keyof typeof persistedStateConfig]
+
+  // If this store is not listed config, do not persist it
+  if (!fieldsToPersist) return
+
+  // Rehydration (loading from localStorage)
   try {
-    const rawLocalStorageValue = localStorage.getItem(`pinia:${store.$id}`)
+    const rawLocalStorageValue = localStorage.getItem(storageKey)
 
-    if (!rawLocalStorageValue) {
-      throw new Error(
-        `persistedState: rehydration failed because ${`pinia:${store.$id}`} is not found in localStorage.`,
-      )
+    if (rawLocalStorageValue) {
+      const parsedLocalStorageValue = JSON.parse(rawLocalStorageValue)
+      store.$patch(parsedLocalStorageValue)
     }
-
-    const parsedLocalStorageValue = JSON.parse(rawLocalStorageValue)
-    store.$patch(parsedLocalStorageValue)
   } catch (e) {
-    console.warn('persistedState: rehydration failed.', e)
+    console.warn(`persistedState: rehydration failed for ${storageKey}.`, e)
   }
 
-  // persistence (saving to localStorage)
+  // Persistence (saving to localStorage)
   store.$subscribe((_, state) => {
     try {
-      localStorage.setItem(`pinia:${store.$id}`, JSON.stringify(state))
+      const persistableState = Object.fromEntries(
+        fieldsToPersist.map((field) => [field, (state as Record<string, unknown>)[field]]),
+      )
+
+      localStorage.setItem(storageKey, JSON.stringify(persistableState))
     } catch (e) {
-      console.warn('persistedState: persistence failed.', e)
+      console.warn(`persistedState: persistence failed for ${storageKey}.`, e)
     }
   })
 }
