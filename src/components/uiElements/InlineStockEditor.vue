@@ -10,13 +10,13 @@ const props = defineProps<{
   originalStockValue: number
 }>()
 
-const emit = defineEmits<{
-  'stock-update': [productId: string, newStockValue: number]
-}>()
-
 const newStockValue = ref(props.originalStockValue)
 const isEditing = ref(false)
 const isSubmitting = ref(false)
+
+const emit = defineEmits<{
+  'stock-update': [productId: string, newStockValue: number]
+}>()
 
 function startEditing() {
   isEditing.value = true

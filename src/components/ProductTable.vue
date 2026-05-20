@@ -17,7 +17,6 @@ import { Trash2 } from 'lucide-vue-next'
 import { LOW_STOCK_THRESHOLD } from '@/types'
 import InlineEditor from '@/components/uiElements/InlineStockEditor.vue'
 
-// store imports
 const productStore = useProductStore()
 </script>
 

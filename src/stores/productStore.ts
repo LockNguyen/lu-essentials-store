@@ -1,23 +1,26 @@
+import { ref, computed } from 'vue'
+import { defineStore } from 'pinia'
+import { toast } from 'vue-sonner'
+
 import type { Product } from '@/types/product'
+import { ALL_CATEGORIES } from '@/types'
+import { useFiltersStore } from '@/stores/filtersStore'
 import {
   bulkAddProductsToDatabase,
   bulkDeleteProductsFromDatabase,
   bulkUpdateStocksInDatabase,
   fetchProductsFromDatabase,
 } from '@/services/productService'
-import { useFiltersStore } from '@/stores/filtersStore'
 
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import { ALL_CATEGORIES } from '@/types'
-import { toast } from 'vue-sonner'
-
+// Extends Product with a UI-only field that tracks whether a row has a pending
+// change staged for the next save, so the table can render status badges.
 export type ProductWithPendingStatus = Product & {
   pendingStatus: 'added' | 'stockUpdated' | 'deleted' | 'unchanged'
 }
 
 export const useProductStore = defineStore('product', () => {
-  // states
+  // --- State ---
+
   const products = ref<Product[]>([])
 
   const pendingProductsToAdd = ref<Product[]>([])
@@ -27,10 +30,46 @@ export const useProductStore = defineStore('product', () => {
   const isAwaitingFetch = ref(false)
   const isAwaitingSave = ref(false)
 
-  // dependencies
   const filtersStore = useFiltersStore()
 
-  // getters
+  // --- Private Helpers ---
+
+  // Applies the search query, category filter, in-stock toggle, and created-at sort, and
+  // price sort to a product list. Extracted so that filteredProductList is decoupled and readable.
+  function getFilteredProductList(
+    normalizedSearchQuery: string,
+    category: string,
+    inStockOnly: boolean,
+    sortDirection: string,
+  ): ProductWithPendingStatus[] {
+    let result = [...productsWithPendingStatus.value]
+
+    if (normalizedSearchQuery) {
+      result = result.filter((p) => p.name.toLowerCase().includes(normalizedSearchQuery))
+    }
+
+    if (category !== ALL_CATEGORIES) {
+      result = result.filter((p) => p.category === category)
+    }
+
+    if (inStockOnly) {
+      result = result.filter((p) => p.stock > 0)
+    }
+
+    result.sort((a, b) => a.createdAt - b.createdAt)
+
+    if (sortDirection === 'asc') {
+      result.sort((a, b) => a.price - b.price)
+    } else if (sortDirection === 'desc') {
+      result.sort((a, b) => b.price - a.price)
+    }
+
+    return result
+  }
+
+  // --- Getters ---
+
+  // Expand the product list to track pending changes and newly added products for additional processing and UI rendering.
   const productsWithPendingStatus = computed<ProductWithPendingStatus[]>(() => {
     const existingProducts = products.value.map((product): ProductWithPendingStatus => {
       const pendingStockValue = pendingStockUpdates.value[product.id]
@@ -76,48 +115,14 @@ export const useProductStore = defineStore('product', () => {
   const pendingDeleteCount = computed(() => pendingProductIdsToRemove.value.size)
   const pendingStockUpdateCount = computed(() => Object.keys(pendingStockUpdates.value).length)
 
-  const hasUnsavedChanges = computed(() => {
-    return (
-      pendingAddCount.value > 0 || pendingDeleteCount.value > 0 || pendingStockUpdateCount.value > 0
-    )
-  })
+  const hasUnsavedChanges = computed(
+    () =>
+      pendingAddCount.value > 0 ||
+      pendingDeleteCount.value > 0 ||
+      pendingStockUpdateCount.value > 0,
+  )
 
-  // actions
-  function getFilteredProductList(
-    normalizedSearchQuery: string,
-    category: string,
-    inStockOnly: boolean,
-    sortDirection: string,
-  ): ProductWithPendingStatus[] {
-    let result = [...productsWithPendingStatus.value]
-
-    // Filter: name
-    if (normalizedSearchQuery) {
-      result = result.filter((p) => p.name.toLowerCase().includes(normalizedSearchQuery))
-    }
-
-    // Filter: category
-    if (category !== ALL_CATEGORIES) {
-      result = result.filter((p) => p.category === category)
-    }
-
-    // Filter: stock (in-stock/out-of-stock)
-    if (inStockOnly) {
-      result = result.filter((p) => p.stock > 0)
-    }
-
-    // Sort: createdat
-    result.sort((a, b) => a.createdAt - b.createdAt)
-
-    // Sort: price
-    if (sortDirection === 'asc') {
-      result.sort((a, b) => a.price - b.price)
-    } else if (sortDirection === 'desc') {
-      result.sort((a, b) => b.price - a.price)
-    }
-
-    return result
-  }
+  // --- Actions ---
 
   async function loadProducts() {
     isAwaitingFetch.value = true
@@ -132,7 +137,6 @@ export const useProductStore = defineStore('product', () => {
 
   function addProduct(newProduct: Omit<Product, 'id' | 'createdAt'>): boolean {
     try {
-      // Value validation
       if (!newProduct.name.trim()) {
         throw new Error('Product name is required.')
       }
@@ -149,7 +153,6 @@ export const useProductStore = defineStore('product', () => {
         throw new Error('Stock must be a non-negative whole number.')
       }
 
-      // Add the product to the pending addition list
       pendingProductsToAdd.value.push({
         ...newProduct,
         id: crypto.randomUUID(),
@@ -167,7 +170,6 @@ export const useProductStore = defineStore('product', () => {
 
   function updateStock(productId: string, newStockValue: number) {
     try {
-      // Value validation
       if (
         !Number.isInteger(newStockValue) ||
         !Number.isFinite(newStockValue) ||
@@ -176,27 +178,25 @@ export const useProductStore = defineStore('product', () => {
         throw new Error('Stock must be a non-negative whole number.')
       }
 
-      // 1. If the product is in the pending addition list, update its stock directly
-      const newProduct = pendingProductsToAdd.value.find((p) => p.id === productId)
-
-      if (newProduct) {
-        newProduct.stock = newStockValue
+      // Pending additions live entirely in pendingProductsToAdd — mutate in place.
+      const pendingNewProduct = pendingProductsToAdd.value.find((p) => p.id === productId)
+      if (pendingNewProduct) {
+        pendingNewProduct.stock = newStockValue
         return
       }
 
-      // 2. If the product's stock value hasn't changed, remove it from the pending update list
       const product = products.value.find((p) => p.id === productId)
-
       if (!product) {
-        throw new Error(`ProductId is not found.`)
+        throw new Error('ProductId is not found.')
       }
 
+      // If the new value matches the committed value, remove the pending update
+      // rather than recording a no-op change.
       if (product.stock === newStockValue) {
         delete pendingStockUpdates.value[productId]
         return
       }
 
-      // 3. If the product currently exists, add the change to the pending update list
       pendingStockUpdates.value[productId] = newStockValue
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Could not update stock.')
@@ -205,29 +205,26 @@ export const useProductStore = defineStore('product', () => {
 
   function removeProduct(productId: string) {
     try {
-      // 1. If the product is in the pending addition list, remove it directly
-      const newProduct = pendingProductsToAdd.value.find((p) => p.id === productId)
-
-      if (newProduct) {
+      // Pending additions can be discarded immediately without touching committed state.
+      const pendingNewProduct = pendingProductsToAdd.value.find((p) => p.id === productId)
+      if (pendingNewProduct) {
         pendingProductsToAdd.value = pendingProductsToAdd.value.filter((p) => p.id !== productId)
         return
       }
 
-      // 2. If the product currently exists, add it to the pending removal list
       const product = products.value.find((p) => p.id === productId)
-
       if (!product) {
-        throw new Error(`ProductId is not found.`)
+        throw new Error('ProductId is not found.')
       }
 
       pendingProductIdsToRemove.value.add(productId)
 
-      // 3. If the product has a pending stock update, remove that update
+      // Also clear any pending stock update so it isn't submitted alongside the deletion.
       const remainingStockUpdates = { ...pendingStockUpdates.value }
       delete remainingStockUpdates[productId]
       pendingStockUpdates.value = remainingStockUpdates
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Could not update stock.')
+      toast.error(error instanceof Error ? error.message : 'Could not remove product.')
     }
   }
 
@@ -238,43 +235,33 @@ export const useProductStore = defineStore('product', () => {
   }
 
   async function submitPendingChangesToDatabase() {
-    if (!hasUnsavedChanges.value) {
-      return
-    }
+    if (!hasUnsavedChanges.value) return
 
+    // Take a snapshot of pending states before any saving to the database so that any
+    // mutations during database writes don't corrupt what gets committed.
     const productsToAdd = [...pendingProductsToAdd.value]
     const productIdsToRemove = Array.from(pendingProductIdsToRemove.value)
     const stockUpdates = { ...pendingStockUpdates.value }
 
-    // Bulk perform each operation on the database
     isAwaitingSave.value = true
 
     try {
       if (productsToAdd.length > 0) {
         const success = await bulkAddProductsToDatabase(productsToAdd)
-
-        if (!success) {
-          throw new Error('Adding products failed')
-        }
+        if (!success) throw new Error('Adding products failed.')
       }
 
       if (Object.keys(stockUpdates).length > 0) {
         const success = await bulkUpdateStocksInDatabase(stockUpdates)
-
-        if (!success) {
-          throw new Error('Updating product stocks failed')
-        }
+        if (!success) throw new Error('Updating product stocks failed.')
       }
 
       if (productIdsToRemove.length > 0) {
         const success = await bulkDeleteProductsFromDatabase(productIdsToRemove)
-
-        if (!success) {
-          throw new Error('Deleting products failed')
-        }
+        if (!success) throw new Error('Deleting products failed.')
       }
 
-      // Update the UI to reflect changes
+      // Apply committed changes to the local product list to keep the UI in sync.
       products.value = [
         ...products.value
           .filter((product) => !pendingProductIdsToRemove.value.has(product.id))
@@ -293,7 +280,6 @@ export const useProductStore = defineStore('product', () => {
     }
   }
 
-  // exports
   return {
     products,
     pendingProductsToAdd,

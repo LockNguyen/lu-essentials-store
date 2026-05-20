@@ -15,10 +15,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 
-// store imports
 const productStore = useProductStore()
 
-// form fields
 const productName = ref('')
 const productCategory = ref('')
 const productPrice = ref<number>(0)
@@ -29,7 +27,6 @@ const emit = defineEmits<{
   canceled: []
 }>()
 
-// helpers
 function handleSubmit() {
   const success = productStore.addProduct({
     name: productName.value,

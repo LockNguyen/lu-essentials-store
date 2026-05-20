@@ -11,10 +11,8 @@ import SavePanel from '@/components/uiElements/SavePanel.vue'
 import ProductForm from '@/components/ProductForm.vue'
 import LoadingWrapper from '@/components/uiElements/LoadingWrapper.vue'
 
-// store imports
 const productStore = useProductStore()
 
-// form showing/hiding
 const isProductFormOpen = ref(false)
 
 onMounted(() => {

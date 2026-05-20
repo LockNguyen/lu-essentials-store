@@ -1,14 +1,16 @@
 import type { PiniaPlugin } from 'pinia'
 import { persistedStateConfig } from '@/plugins/persistedState.config'
 
+// Pinia plugin that persists every store's state change to
+// localStorage and rehydrates it on page load.
 export const persistedStatePlugin: PiniaPlugin = ({ store }) => {
   const storageKey = `pinia:${store.$id}`
   const fieldsToPersist = persistedStateConfig[store.$id as keyof typeof persistedStateConfig]
 
-  // If this store is not listed config, do not persist it
+  // If this store is not whitelisted config, do not persist it.
   if (!fieldsToPersist) return
 
-  // Rehydration (loading from localStorage)
+  // Rehydrate from localStorage on startup.
   try {
     const rawLocalStorageValue = localStorage.getItem(storageKey)
 
@@ -20,7 +22,7 @@ export const persistedStatePlugin: PiniaPlugin = ({ store }) => {
     console.warn(`persistedState: rehydration failed for ${storageKey}.`, e)
   }
 
-  // Persistence (saving to localStorage)
+  // Persist to localStorage on every state change.
   store.$subscribe((_, state) => {
     try {
       const persistableState = Object.fromEntries(

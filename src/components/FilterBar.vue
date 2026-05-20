@@ -15,7 +15,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-// store imports
 const filtersStore = useFiltersStore()
 const productStore = useProductStore()
 </script>
