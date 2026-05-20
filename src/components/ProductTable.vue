@@ -22,7 +22,10 @@ const productStore = useProductStore()
 </script>
 
 <template>
-  <section class="max-h-full overflow-hidden rounded-xl border bg-background shadow-md">
+  <section
+    class="max-h-full overflow-hidden rounded-xl border bg-background shadow-md"
+    aria-label="Product List"
+  >
     <div class="max-h-full overflow-auto">
       <Table class="min-w-190 w-full table-fixed">
         <TableHeader>
@@ -109,6 +112,7 @@ const productStore = useProductStore()
                   v-else
                   :key="product.id"
                   :product-id="product.id"
+                  :product-name="product.name"
                   :original-stock-value="product.stock"
                   :handle-submit="productStore.updateStock"
                 />
@@ -139,6 +143,7 @@ const productStore = useProductStore()
                 variant="destructive"
                 size="lg"
                 :disabled="product.pendingStatus === 'deleted'"
+                :aria-label="'Delete ' + product.name"
                 @click="productStore.removeProduct(product.id)"
               >
                 <Trash2 class="size-4" />

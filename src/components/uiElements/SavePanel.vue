@@ -9,6 +9,7 @@ const productStore = useProductStore()
   <section
     v-if="productStore.hasUnsavedChanges"
     class="z-50 rounded-xl border bg-card p-4 shadow-md"
+    aria-label="Unsaved Changes Panel"
   >
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div class="space-y-1">

@@ -7,6 +7,7 @@ import { toast } from 'vue-sonner'
 
 const props = defineProps<{
   productId: string
+  productName: string
   originalStockValue: number
   handleSubmit: (productId: string, newStockValue: number) => void
 }>()
@@ -45,7 +46,7 @@ function cancelEditing() {
       v-if="isEditing"
       v-model.number="newStockValue"
       class="h-8 w-24"
-      aria-label="Edit stock"
+      :aria-label="'Edit stock for ' + productName"
       autofocus="true"
       @blur="finishEditing"
       @keyup.enter="finishEditing"
@@ -58,7 +59,8 @@ function cancelEditing() {
       variant="ghost"
       size="sm"
       class="h-8 px-2"
-      title="Click to edit stock"
+      :title="'Click to edit stock for ' + productName"
+      :aria-label="'Edit stock for ' + productName + ', current stock is ' + originalStockValue"
       @click="startEditing"
     >
       {{ originalStockValue }}
