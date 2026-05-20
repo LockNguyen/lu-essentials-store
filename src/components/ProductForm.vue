@@ -92,7 +92,7 @@ function handleSubmit() {
         <DialogFooter>
           <Button type="button" variant="outline" @click="emit('canceled')"> Cancel </Button>
 
-          <Button type="submit"> Submit </Button>
+          <Button type="submit"> Add to changes </Button>
         </DialogFooter>
       </form>
     </DialogContent>

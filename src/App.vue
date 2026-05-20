@@ -5,10 +5,10 @@ import NavBar from './components/uiElements/NavBar.vue'
 </script>
 
 <template>
-  <div class="min-h-screen bg-background text-foreground">
-    <NavBar />
+  <div class="flex h-screen flex-col overflow-hidden bg-background text-foreground">
+    <NavBar class="shrink-0" />
 
-    <main class="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <main class="mx-auto flex min-h-0 w-full max-w-7xl flex-1 flex-col px-4 py-6 sm:px-6 lg:px-8">
       <RouterView />
     </main>
   </div>

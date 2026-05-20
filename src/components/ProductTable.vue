@@ -21,64 +21,115 @@ const productStore = useProductStore()
 </script>
 
 <template>
-  <section class="w-full rounded-xl border bg-background shadow-md">
-    <Table class="w-full table-fixed">
-      <TableHeader>
-        <TableRow>
-          <TableHead class="w-[30%]">Name</TableHead>
-          <TableHead class="w-[22%]">Category</TableHead>
-          <TableHead class="w-[14%]">Price</TableHead>
-          <TableHead class="w-[22%]">Stock</TableHead>
-          <TableHead class="w-[12%] text-right">
-            <span>Actions</span>
-          </TableHead>
-        </TableRow>
-      </TableHeader>
+  <section class="max-h-full overflow-hidden rounded-xl border bg-background shadow-md">
+    <div class="max-h-full overflow-auto">
+      <Table class="min-w-190 w-full table-fixed">
+        <TableHeader>
+          <TableRow>
+            <TableHead class="w-[30%] font-bold pl-4">Name</TableHead>
+            <TableHead class="w-[22%] font-bold">Category</TableHead>
+            <TableHead class="w-[14%] font-bold">Price</TableHead>
+            <TableHead class="w-[22%] font-bold">Stock</TableHead>
+            <TableHead class="w-[12%] font-bold pr-4 text-right">
+              <span>Actions</span>
+            </TableHead>
+          </TableRow>
+        </TableHeader>
 
-      <TableBody>
-        <TableRow v-if="productStore.filteredProductList.length === 0">
-          <TableCell colspan="5" class="h-24 text-center text-muted-foreground">
-            No products found.
-          </TableCell>
-        </TableRow>
+        <TableBody>
+          <!-- Empty product list display -->
+          <TableRow v-if="productStore.filteredProductList.length === 0">
+            <TableCell colspan="5" class="h-24 text-center text-muted-foreground">
+              No products found.
+            </TableCell>
+          </TableRow>
 
-        <TableRow
-          v-for="product in productStore.filteredProductList"
-          :key="product.id"
-          :class="product.stock === 0 ? 'bg-destructive/5' : ''"
-        >
-          <TableCell class="font-medium">
-            {{ product.name }}
-          </TableCell>
+          <!-- Product list display -->
+          <TableRow
+            v-for="product in productStore.filteredProductList"
+            :key="product.id"
+            :class="{
+              'bg-destructive/5': product.stock === 0 && product.pendingStatus !== 'deleted',
+            }"
+          >
+            <TableCell class="font-medium pl-4">
+              <div class="flex items-center gap-2">
+                <span :class="product.pendingStatus === 'deleted' ? 'line-through' : ''">
+                  {{ product.name }}
+                </span>
 
-          <TableCell>
-            {{ product.category }}
-          </TableCell>
+                <Badge
+                  v-if="product.pendingStatus === 'added'"
+                  variant="default"
+                  class="bg-green-600"
+                >
+                  New
+                </Badge>
+                <Badge
+                  v-else-if="product.pendingStatus === 'stockUpdated'"
+                  variant="default"
+                  class="bg-amber-500"
+                >
+                  Stock Updated
+                </Badge>
+                <Badge
+                  v-else-if="product.pendingStatus === 'deleted'"
+                  variant="default"
+                  class="bg-red-600"
+                >
+                  Deleted
+                </Badge>
+              </div>
+            </TableCell>
 
-          <TableCell>
-            {{ formatPrice(product.price) }}
-          </TableCell>
+            <TableCell>
+              <span :class="product.pendingStatus === 'deleted' ? 'line-through' : ''">{{
+                product.category
+              }}</span>
+            </TableCell>
 
-          <TableCell>
-            <div class="flex items-center gap-2">
-              <InlineEditor
-                :key="product.id"
-                :product-id="product.id"
-                :original-stock-value="product.stock"
-                :handle-submit="productStore.updateStock"
-              />
+            <TableCell>
+              <span :class="product.pendingStatus === 'deleted' ? 'line-through' : ''">
+                {{ formatPrice(product.price) }}
+              </span>
+            </TableCell>
 
-              <Badge v-if="product.stock === 0" variant="destructive"> Out-of-stock </Badge>
-            </div>
-          </TableCell>
+            <TableCell>
+              <div class="flex items-center gap-2">
+                <span v-if="product.pendingStatus === 'deleted'" class="line-through">
+                  {{ product.stock }}
+                </span>
 
-          <TableCell class="text-right">
-            <Button variant="destructive" size="sm" @click="productStore.removeProduct(product.id)">
-              <Trash2 />
-            </Button>
-          </TableCell>
-        </TableRow>
-      </TableBody>
-    </Table>
+                <InlineEditor
+                  v-else
+                  :key="product.id"
+                  :product-id="product.id"
+                  :original-stock-value="product.stock"
+                  :handle-submit="productStore.updateStock"
+                />
+
+                <Badge
+                  v-if="product.stock === 0 && product.pendingStatus !== 'deleted'"
+                  variant="destructive"
+                >
+                  Out-of-stock
+                </Badge>
+              </div>
+            </TableCell>
+
+            <TableCell class="text-right pr-4">
+              <Button
+                variant="destructive"
+                size="lg"
+                :disabled="product.pendingStatus === 'deleted'"
+                @click="productStore.removeProduct(product.id)"
+              >
+                <Trash2 class="size-4" />
+              </Button>
+            </TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
+    </div>
   </section>
 </template>

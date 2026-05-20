@@ -2,19 +2,25 @@
 import { ref, onMounted } from 'vue'
 import { useProductStore } from '@/stores/productStore'
 
-import FilterBar from '@/components/Filters.vue'
+import { Button } from '@/components/ui/button'
+import { Plus } from 'lucide-vue-next'
+
+import FilterBar from '@/components/FilterBar.vue'
 import ProductTable from '@/components/ProductTable.vue'
+import SavePanel from '@/components/uiElements/SavePanel.vue'
 import ProductForm from '@/components/ProductForm.vue'
-import ButtonWithIcon from '@/components/uiElements/ButtonWithIcon.vue'
+import LoadingWrapper from '@/components/uiElements/LoadingWrapper.vue'
 
 // store imports
 const productStore = useProductStore()
 
 // form showing/hiding
 const isProductFormOpen = ref(false)
+
 function openProductForm() {
   isProductFormOpen.value = true
 }
+
 function closeProductForm() {
   isProductFormOpen.value = false
 }
@@ -28,13 +34,39 @@ onMounted(() => {
 </script>
 
 <template>
-  <main>
-    <div class="page-headline">
-      <h1>Products</h1>
-      <ButtonWithIcon text="+ Add New" @click="openProductForm" />
+  <main class="flex h-full flex-col overflow-hidden">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+      <h1 class="text-3xl font-extrabold tracking-tight">Products</h1>
+
+      <Button class="shadow-md" size="lg" type="button" @click="openProductForm">
+        <Plus class="mr-2 h-4 w-4" />
+        Add New
+      </Button>
     </div>
-    <FilterBar />
-    <ProductTable />
+
+    <!-- Filters -->
+    <div class="mt-6 shrink-0">
+      <FilterBar />
+    </div>
+
+    <!-- Scrollable table area -->
+    <div class="mt-6 min-h-0 flex-1">
+      <LoadingWrapper
+        :is-loading="productStore.isAwaitingFetch || productStore.isAwaitingSave"
+        class="flex h-full min-h-0 flex-col overflow-hidden"
+      >
+        <ProductTable />
+      </LoadingWrapper>
+    </div>
+
+    <!-- Save panel -->
+    <div class="mt-6 shrink-0">
+      <LoadingWrapper :is-loading="productStore.isAwaitingSave">
+        <SavePanel />
+      </LoadingWrapper>
+    </div>
+
     <ProductForm
       v-if="isProductFormOpen"
       @created="closeProductForm"
