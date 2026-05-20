@@ -100,9 +100,6 @@ export async function fetchProductsFromDatabase(): Promise<Product[]> {
  */
 export async function bulkAddProductsToDatabase(products: Product[]): Promise<boolean> {
   return new Promise((resolve) => {
-    console.log("productService: I'm trying to bulk add products")
-    console.log(products)
-
     setTimeout(() => {
       resolve(true)
     }, 1000)
@@ -117,9 +114,6 @@ export async function bulkUpdateStocksInDatabase(
   stockUpdates: Record<string, number>,
 ): Promise<boolean> {
   return new Promise((resolve) => {
-    console.log("productService: I'm trying to bulk update product stocks")
-    console.log(stockUpdates)
-
     setTimeout(() => {
       resolve(true)
     }, 1000)
@@ -132,9 +126,6 @@ export async function bulkUpdateStocksInDatabase(
  */
 export async function bulkDeleteProductsFromDatabase(productIds: string[]): Promise<boolean> {
   return new Promise((resolve) => {
-    console.log("productService: I'm trying to bulk delete products")
-    console.log(productIds)
-
     setTimeout(() => {
       resolve(true)
     }, 1000)

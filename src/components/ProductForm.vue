@@ -79,6 +79,10 @@ function handleSubmit() {
             id="product-price"
             v-model.number="productPrice"
             placeholder="Type product price..."
+            inputmode="numeric"
+            pattern="[0-9]*"
+            oninvalid="this.setCustomValidity('Please enter positive numbers only.')"
+            oninput="this.setCustomValidity('')"
           />
         </div>
 
@@ -88,6 +92,10 @@ function handleSubmit() {
             id="product-stock"
             v-model.number="productStock"
             placeholder="Type product stock..."
+            inputmode="numeric"
+            pattern="[0-9]*"
+            oninvalid="this.setCustomValidity('Please enter positive whole numbers only.')"
+            oninput="this.setCustomValidity('')"
           />
         </div>
 

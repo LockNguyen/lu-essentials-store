@@ -11,7 +11,7 @@ export const useFiltersStore = defineStore('filters', () => {
 
   // getters
   const normalizedSearchQuery = computed(() => {
-    return searchQuery.value.trim().toLowerCase() ?? ''
+    return searchQuery.value.trim().toLowerCase()
   })
 
   // actions

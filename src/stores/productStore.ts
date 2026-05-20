@@ -231,13 +231,13 @@ export const useProductStore = defineStore('product', () => {
     }
   }
 
-  function clearChanges() {
+  function clearPendingChanges() {
     pendingProductsToAdd.value = []
     pendingProductIdsToRemove.value = new Set()
     pendingStockUpdates.value = {}
   }
 
-  async function submitChanges() {
+  async function submitPendingChangesToDatabase() {
     if (!hasUnsavedChanges.value) {
       return
     }
@@ -254,7 +254,7 @@ export const useProductStore = defineStore('product', () => {
         const success = await bulkAddProductsToDatabase(productsToAdd)
 
         if (!success) {
-          throw new Error('submitChanges: adding products failed')
+          throw new Error('Adding products failed')
         }
       }
 
@@ -262,7 +262,7 @@ export const useProductStore = defineStore('product', () => {
         const success = await bulkUpdateStocksInDatabase(stockUpdates)
 
         if (!success) {
-          throw new Error('submitChanges: updating product stocks failed')
+          throw new Error('Updating product stocks failed')
         }
       }
 
@@ -270,7 +270,7 @@ export const useProductStore = defineStore('product', () => {
         const success = await bulkDeleteProductsFromDatabase(productIdsToRemove)
 
         if (!success) {
-          throw new Error('submitChanges: deleting products failed')
+          throw new Error('Deleting products failed')
         }
       }
 
@@ -285,7 +285,7 @@ export const useProductStore = defineStore('product', () => {
         ...pendingProductsToAdd.value,
       ]
 
-      clearChanges()
+      clearPendingChanges()
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to save products.')
     } finally {
@@ -312,7 +312,7 @@ export const useProductStore = defineStore('product', () => {
     addProduct,
     updateStock,
     removeProduct,
-    clearChanges,
-    submitChanges,
+    clearPendingChanges,
+    submitPendingChangesToDatabase,
   }
 })

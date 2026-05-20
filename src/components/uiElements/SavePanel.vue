@@ -24,7 +24,7 @@ const productStore = useProductStore()
         <Button
           variant="outline"
           :disabled="productStore.isAwaitingSave"
-          @click="productStore.clearChanges"
+          @click="productStore.clearPendingChanges"
           size="lg"
         >
           Cancel
@@ -32,7 +32,7 @@ const productStore = useProductStore()
 
         <Button
           :disabled="productStore.isAwaitingSave"
-          @click="productStore.submitChanges"
+          @click="productStore.submitPendingChangesToDatabase"
           size="lg"
         >
           {{ productStore.isAwaitingSave ? 'Saving...' : 'Submit' }}

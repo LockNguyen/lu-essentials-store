@@ -17,14 +17,6 @@ const productStore = useProductStore()
 // form showing/hiding
 const isProductFormOpen = ref(false)
 
-function openProductForm() {
-  isProductFormOpen.value = true
-}
-
-function closeProductForm() {
-  isProductFormOpen.value = false
-}
-
 onMounted(() => {
   // Only fetch products from database if persistedStatePlugin hasn't loaded products from localStorage already
   if (productStore.products.length === 0) {
@@ -39,7 +31,7 @@ onMounted(() => {
     <div class="flex items-center justify-between">
       <h1 class="text-3xl font-extrabold tracking-tight">Products</h1>
 
-      <Button class="shadow-md" size="lg" type="button" @click="openProductForm">
+      <Button class="shadow-md" size="lg" type="button" @click="isProductFormOpen = true">
         <Plus class="mr-2 h-4 w-4" />
         Add New
       </Button>
@@ -69,8 +61,8 @@ onMounted(() => {
 
     <ProductForm
       v-if="isProductFormOpen"
-      @created="closeProductForm"
-      @canceled="closeProductForm"
+      @created="isProductFormOpen = false"
+      @canceled="isProductFormOpen = false"
     />
   </main>
 </template>
