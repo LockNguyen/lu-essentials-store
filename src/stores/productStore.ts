@@ -5,11 +5,11 @@ import {
   bulkUpdateStocksInDatabase,
   fetchProductsFromDatabase,
 } from '@/services/productService'
-import { useFiltersStore } from '@/stores/filtersStore'
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { ALL_CATEGORIES } from '@/types'
+import { useFiltersStore } from '@/stores/filtersStore'
 
 export type ProductWithPendingStatus = Product & {
   pendingStatus: 'added' | 'stockUpdated' | 'deleted' | 'unchanged'
@@ -28,7 +28,6 @@ export const useProductStore = defineStore('product', () => {
 
   const error = ref<string | null>(null)
 
-  // dependencies
   const filtersStore = useFiltersStore()
 
   // getters
@@ -58,39 +57,14 @@ export const useProductStore = defineStore('product', () => {
     return [...existingProducts, ...newProducts]
   })
 
-  const filteredProductList = computed(() => {
-    // TODO: decouple by passing stuff into computed instead. Remove filterStore
-    let result = [...productsWithPendingStatus.value]
-
-    // Filter: name
-    if (filtersStore.normalizedSearchQuery) {
-      result = result.filter((p) =>
-        p.name.toLowerCase().includes(filtersStore.normalizedSearchQuery),
-      )
-    }
-
-    // Filter: category
-    if (filtersStore.category !== ALL_CATEGORIES) {
-      result = result.filter((p) => p.category === filtersStore.category)
-    }
-
-    // Filter: stock (in-stock/out-of-stock)
-    if (filtersStore.inStockOnly) {
-      result = result.filter((p) => p.stock > 0)
-    }
-
-    // Sort: createdat
-    result.sort((a, b) => a.createdAt - b.createdAt)
-
-    // Sort: price
-    if (filtersStore.sortDirection === 'asc') {
-      result.sort((a, b) => a.price - b.price)
-    } else if (filtersStore.sortDirection === 'desc') {
-      result.sort((a, b) => b.price - a.price)
-    }
-
-    return result
-  })
+  const filteredProductList = computed<ProductWithPendingStatus[]>(() =>
+    getFilteredProductList(
+      filtersStore.normalizedSearchQuery,
+      filtersStore.category,
+      filtersStore.inStockOnly,
+      filtersStore.sortDirection,
+    ),
+  )
 
   const productCategoryList = computed(() => {
     const categories = new Set((products.value ?? []).map((p) => p.category))
@@ -109,6 +83,42 @@ export const useProductStore = defineStore('product', () => {
   })
 
   // actions
+  function getFilteredProductList(
+    normalizedSearchQuery: string,
+    category: string,
+    inStockOnly: boolean,
+    sortDirection: string,
+  ): ProductWithPendingStatus[] {
+    let result = [...productsWithPendingStatus.value]
+
+    // Filter: name
+    if (normalizedSearchQuery) {
+      result = result.filter((p) => p.name.toLowerCase().includes(normalizedSearchQuery))
+    }
+
+    // Filter: category
+    if (category !== ALL_CATEGORIES) {
+      result = result.filter((p) => p.category === category)
+    }
+
+    // Filter: stock (in-stock/out-of-stock)
+    if (inStockOnly) {
+      result = result.filter((p) => p.stock > 0)
+    }
+
+    // Sort: createdat
+    result.sort((a, b) => a.createdAt - b.createdAt)
+
+    // Sort: price
+    if (sortDirection === 'asc') {
+      result.sort((a, b) => a.price - b.price)
+    } else if (sortDirection === 'desc') {
+      result.sort((a, b) => b.price - a.price)
+    }
+
+    return result
+  }
+
   async function loadProducts() {
     isAwaitingFetch.value = true
     try {
