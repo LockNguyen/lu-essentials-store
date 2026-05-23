@@ -2,9 +2,10 @@
 import { ref } from 'vue'
 import { useProductStore } from '@/stores/productStore'
 
+import ValidatedInput from '@/components/uiElements/ValidatedInput.vue'
+
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { toast } from 'vue-sonner'
 
 import {
   Dialog,
@@ -17,10 +18,10 @@ import {
 
 const productStore = useProductStore()
 
-const productName = ref('')
-const productCategory = ref('')
-const productPrice = ref<number>(0)
-const productStock = ref<number>(0)
+const nameInput = ref<InstanceType<typeof ValidatedInput> | null>(null)
+const categoryInput = ref<InstanceType<typeof ValidatedInput> | null>(null)
+const priceInput = ref<InstanceType<typeof ValidatedInput> | null>(null)
+const stockInput = ref<InstanceType<typeof ValidatedInput> | null>(null)
 
 const emit = defineEmits<{
   created: []
@@ -28,11 +29,21 @@ const emit = defineEmits<{
 }>()
 
 function handleSubmit() {
+  const name = nameInput.value?.validate()
+  const category = categoryInput.value?.validate()
+  const price = priceInput.value?.validate()
+  const stock = stockInput.value?.validate()
+
+  if (!name?.valid || !category?.valid || !price?.valid || !stock?.valid) {
+    toast.error('Please correct the highlighted fields before submitting.')
+    return
+  }
+
   const success = productStore.addProduct({
-    name: productName.value,
-    category: productCategory.value,
-    price: productPrice.value,
-    stock: productStock.value,
+    name: String(name.value),
+    category: String(category.value),
+    price: Number(price.value),
+    stock: Number(stock.value),
   })
 
   if (success) {
@@ -42,59 +53,55 @@ function handleSubmit() {
 </script>
 
 <template>
-  <Dialog :open="true" @update:open="(open) => !open && emit('canceled')">
-    <DialogContent class="sm:max-w-lg">
+  <Dialog :open="true">
+    <DialogContent class="sm:max-w-lg [&>button]:hidden">
       <DialogHeader>
         <DialogTitle>Add a new product</DialogTitle>
         <DialogDescription> Fill out the product details below. </DialogDescription>
       </DialogHeader>
 
       <form class="grid gap-4" @submit.prevent="handleSubmit">
-        <div class="grid gap-2">
-          <Label for="product-name">Name</Label>
-          <Input
-            id="product-name"
-            v-model="productName"
-            type="text"
-            placeholder="Type product name…"
-          />
-        </div>
+        <ValidatedInput
+          ref="nameInput"
+          id="product-name"
+          label="Name"
+          guardType="anything"
+          required
+          placeholder="Type product name…"
+          required-message="Please do not leave the product name blank."
+        />
 
-        <div class="grid gap-2">
-          <Label for="product-category">Category</Label>
-          <Input
-            id="product-category"
-            v-model="productCategory"
-            type="text"
-            placeholder="Type product category..."
-          />
-        </div>
+        <ValidatedInput
+          ref="categoryInput"
+          id="product-category"
+          label="Category"
+          guardType="anything"
+          placeholder="Type product category..."
+        />
 
-        <div class="grid gap-2">
-          <Label for="product-price">Price</Label>
-          <Input
-            id="product-price"
-            v-model.number="productPrice"
-            placeholder="Type product price..."
-            inputmode="numeric"
-            pattern="[0-9]*"
-            oninvalid="this.setCustomValidity('Please enter positive numbers only.')"
-            oninput="this.setCustomValidity('')"
-          />
-        </div>
+        <ValidatedInput
+          ref="priceInput"
+          id="product-price"
+          label="Price"
+          guardType="decimal"
+          required
+          positive
+          placeholder="Type product price..."
+          required-message="Please do not leave the price blank."
+          invalid-message="Please enter a price greater than 0, using numbers and at most one decimal point."
+        />
 
-        <div class="grid gap-2">
-          <Label for="product-stock">Stock</Label>
-          <Input
-            id="product-stock"
-            v-model.number="productStock"
-            placeholder="Type product stock..."
-            inputmode="numeric"
-            pattern="[0-9]*"
-            oninvalid="this.setCustomValidity('Please enter positive whole numbers only.')"
-            oninput="this.setCustomValidity('')"
-          />
-        </div>
+        <ValidatedInput
+          ref="stockInput"
+          id="product-stock"
+          label="Stock"
+          guardType="integer"
+          required
+          :min="0"
+          placeholder="Type product stock..."
+          required-message="Please do not leave the stock blank."
+          invalid-message="Please enter 0 or a positive whole number for stock."
+        />
 
         <DialogFooter>
           <Button type="button" variant="outline" @click="emit('canceled')"> Cancel </Button>
