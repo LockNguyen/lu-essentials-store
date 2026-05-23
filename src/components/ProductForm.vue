@@ -29,21 +29,26 @@ const emit = defineEmits<{
 }>()
 
 function handleSubmit() {
-  const name = nameInput.value?.validate()
-  const category = categoryInput.value?.validate()
-  const price = priceInput.value?.validate()
-  const stock = stockInput.value?.validate()
+  const validatedName = nameInput.value?.validate()
+  const validatedCategory = categoryInput.value?.validate()
+  const validatedPrice = priceInput.value?.validate()
+  const validatedStock = stockInput.value?.validate()
 
-  if (!name?.valid || !category?.valid || !price?.valid || !stock?.valid) {
+  if (
+    !validatedName?.valid ||
+    !validatedCategory?.valid ||
+    !validatedPrice?.valid ||
+    !validatedStock?.valid
+  ) {
     toast.error('Please correct the highlighted fields before submitting.')
     return
   }
 
   const success = productStore.addProduct({
-    name: String(name.value),
-    category: String(category.value),
-    price: Number(price.value),
-    stock: Number(stock.value),
+    name: String(validatedName.value),
+    category: String(validatedCategory.value),
+    price: Number(validatedPrice.value),
+    stock: Number(validatedStock.value),
   })
 
   if (success) {
