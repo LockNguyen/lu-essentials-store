@@ -20,7 +20,8 @@ export type ValidationResult =
 const props = withDefaults(
   defineProps<{
     id: string
-    label: string
+    label?: string
+    ariaLabel?: string
     guardType?: GuardType
     placeholder?: string
     required?: boolean
@@ -29,8 +30,11 @@ const props = withDefaults(
     requiredMessage?: string
     invalidMessage?: string
     initialValue?: string | number
+    showError?: boolean
   }>(),
   {
+    label: '',
+    ariaLabel: '',
     guardType: 'anything',
     placeholder: '',
     required: false,
@@ -38,17 +42,23 @@ const props = withDefaults(
     requiredMessage: '',
     invalidMessage: '',
     initialValue: '',
+    showError: true,
   },
 )
 
 const emit = defineEmits<{
   validated: [value: ValidatedValue]
+  blur: []
+  enter: []
+  escape: []
 }>()
 
 const rawValue = ref(String(props.initialValue))
 const error = ref('')
 
+const hasLabel = computed(() => props.label.trim() !== '')
 const hasError = computed(() => error.value !== '')
+const fieldName = computed(() => props.label.toLowerCase() || 'this field')
 
 const inputMode = computed(() => {
   if (props.guardType === 'decimal') return 'decimal'
@@ -80,9 +90,7 @@ function validate(): ValidationResult {
 
   if (!value) {
     if (props.required) {
-      return fail(
-        props.requiredMessage || `Please do not leave ${props.label.toLowerCase()} blank.`,
-      )
+      return fail(props.requiredMessage || `Please do not leave ${fieldName.value} blank.`)
     }
 
     return pass('')
@@ -98,9 +106,7 @@ function validate(): ValidationResult {
     const lettersOnly = /^[\p{L}\p{M}]+(?:[ '-][\p{L}\p{M}]+)*$/u
 
     if (!lettersOnly.test(value)) {
-      return fail(
-        props.invalidMessage || `Please enter letters only for ${props.label.toLowerCase()}.`,
-      )
+      return fail(props.invalidMessage || `Please enter letters only for ${fieldName.value}.`)
     }
 
     return pass(value)
@@ -108,69 +114,65 @@ function validate(): ValidationResult {
 
   if (props.guardType === 'integer') {
     if (!/^\d+$/.test(value)) {
-      return fail(
-        props.invalidMessage || `Please enter whole numbers only for ${props.label.toLowerCase()}.`,
-      )
+      return fail(props.invalidMessage || `Please enter whole numbers only for ${fieldName.value}.`)
     }
 
     const numberValue = Number(value)
 
     if (!Number.isSafeInteger(numberValue)) {
       return fail(
-        props.invalidMessage ||
-          `Please enter a valid whole number for ${props.label.toLowerCase()}.`,
+        props.invalidMessage || `Please enter a valid whole number for ${fieldName.value}.`,
       )
     }
 
     if (props.positive && numberValue <= 0) {
-      return fail(props.invalidMessage || `${props.label} must be greater than 0.`)
+      return fail(props.invalidMessage || `${props.label || 'This value'} must be greater than 0.`)
     }
 
     if (props.min !== undefined && numberValue < props.min) {
-      return fail(props.invalidMessage || `${props.label} must be at least ${props.min}.`)
+      return fail(
+        props.invalidMessage || `${props.label || 'This value'} must be at least ${props.min}.`,
+      )
     }
 
     return pass(numberValue)
   }
 
   if (props.guardType === 'decimal') {
-    // Accepts 12, 12.50 and .50. Rejects 12., 12.3.4 and 123abc.
     const decimalNumber = /^(?:\d+|\d*\.\d+)$/
 
     if (!decimalNumber.test(value)) {
-      return fail(
-        props.invalidMessage || `Please enter a valid number for ${props.label.toLowerCase()}.`,
-      )
+      return fail(props.invalidMessage || `Please enter a valid number for ${fieldName.value}.`)
     }
 
     const numberValue = Number(value)
 
     if (!Number.isFinite(numberValue)) {
-      return fail(
-        props.invalidMessage || `Please enter a valid number for ${props.label.toLowerCase()}.`,
-      )
+      return fail(props.invalidMessage || `Please enter a valid number for ${fieldName.value}.`)
     }
 
     if (props.positive && numberValue <= 0) {
-      return fail(props.invalidMessage || `${props.label} must be greater than 0.`)
+      return fail(props.invalidMessage || `${props.label || 'This value'} must be greater than 0.`)
     }
 
     if (props.min !== undefined && numberValue < props.min) {
-      return fail(props.invalidMessage || `${props.label} must be at least ${props.min}.`)
+      return fail(
+        props.invalidMessage || `${props.label || 'This value'} must be at least ${props.min}.`,
+      )
     }
 
     return pass(numberValue)
   }
 
-  return fail(`Could not validate ${props.label.toLowerCase()}.`)
+  return fail(`Could not validate ${fieldName.value}.`)
 }
 
 function clearError() {
   error.value = ''
 }
 
-function reset() {
-  rawValue.value = ''
+function reset(value: string | number = '') {
+  rawValue.value = String(value)
   error.value = ''
 }
 
@@ -182,7 +184,7 @@ defineExpose({
 
 <template>
   <div class="grid gap-2">
-    <Label :for="id">
+    <Label v-if="hasLabel" :for="id">
       {{ label }}
       <span v-if="required" class="text-destructive" aria-hidden="true"> * </span>
     </Label>
@@ -193,15 +195,23 @@ defineExpose({
       type="text"
       :inputmode="inputMode"
       :placeholder="placeholder"
+      :aria-label="ariaLabel || undefined"
       :aria-invalid="hasError || undefined"
-      :aria-describedby="hasError ? `${id}-error` : undefined"
+      :aria-describedby="hasError && showError ? `${id}-error` : undefined"
       :class="{
         'border-destructive ring-destructive/20 focus-visible:ring-destructive/30': hasError,
       }"
       @update:model-value="clearError"
+      @blur="emit('blur')"
+      @keyup.enter.prevent="emit('enter')"
+      @keyup.escape.prevent="emit('escape')"
     />
 
-    <p v-if="hasError" :id="`${id}-error`" class="leading-none text-sm text-destructive">
+    <p
+      v-if="hasError && showError"
+      :id="`${id}-error`"
+      class="leading-none text-sm text-destructive"
+    >
       {{ error }}
     </p>
   </div>
