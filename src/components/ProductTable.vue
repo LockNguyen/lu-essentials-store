@@ -22,10 +22,10 @@ const productStore = useProductStore()
 
 <template>
   <section
-    class="max-h-full overflow-hidden rounded-xl border bg-background shadow-md"
+    class="flex min-h-0 flex-col overflow-hidden rounded-md border bg-card shadow-md"
     aria-label="Product List"
   >
-    <div class="max-h-full overflow-auto">
+    <div class="min-h-0 overflow-auto">
       <Table class="min-w-190 w-full table-fixed">
         <TableHeader>
           <TableRow>
@@ -52,11 +52,8 @@ const productStore = useProductStore()
             v-for="product in productStore.filteredProductList"
             :key="product.id"
             :class="{
-              'bg-destructive/10': product.stock === 0 && product.pendingStatus !== 'deleted',
-              'bg-amber-400/10':
-                product.stock > 0 &&
-                product.stock <= LOW_STOCK_THRESHOLD &&
-                product.pendingStatus !== 'deleted',
+              'bg-stock-low-background/30 hover:bg-stock-low-background/50':
+                product.stock <= LOW_STOCK_THRESHOLD && product.pendingStatus !== 'deleted',
             }"
           >
             <TableCell class="font-medium pl-4">
@@ -67,22 +64,22 @@ const productStore = useProductStore()
 
                 <Badge
                   v-if="product.pendingStatus === 'added'"
-                  variant="default"
-                  class="bg-green-600"
+                  variant="outline"
+                  class="text-green-600"
                 >
                   New
                 </Badge>
                 <Badge
                   v-else-if="product.pendingStatus === 'stockUpdated'"
-                  variant="default"
-                  class="bg-amber-500"
+                  variant="outline"
+                  class="text-amber-500"
                 >
                   Stock Updated
                 </Badge>
                 <Badge
                   v-else-if="product.pendingStatus === 'deleted'"
-                  variant="default"
-                  class="bg-red-600"
+                  variant="outline"
+                  class="text-red-600"
                 >
                   Deleted
                 </Badge>
@@ -117,20 +114,9 @@ const productStore = useProductStore()
                 />
 
                 <Badge
-                  v-if="product.stock === 0 && product.pendingStatus !== 'deleted'"
-                  variant="destructive"
-                >
-                  Out-of-stock
-                </Badge>
-
-                <Badge
-                  v-if="
-                    product.stock > 0 &&
-                    product.stock <= LOW_STOCK_THRESHOLD &&
-                    product.pendingStatus !== 'deleted'
-                  "
-                  variant="default"
-                  class="bg-amber-500"
+                  v-if="product.stock <= LOW_STOCK_THRESHOLD && product.pendingStatus !== 'deleted'"
+                  variant="outline"
+                  class="bg-stock-low-background border-stock-low-border text-stock-low"
                 >
                   Low-stock
                 </Badge>
@@ -139,7 +125,8 @@ const productStore = useProductStore()
 
             <TableCell class="text-right pr-4">
               <Button
-                variant="destructive"
+                variant="outline"
+                class="hover:bg-destructive hover:text-primary-foreground px-3!"
                 size="lg"
                 :disabled="product.pendingStatus === 'deleted'"
                 :aria-label="'Delete ' + product.name"

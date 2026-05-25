@@ -20,7 +20,7 @@ const productStore = useProductStore()
 </script>
 
 <template>
-  <section class="rounded-xl border bg-card p-4 shadow-md" aria-label="Product Filters">
+  <section class="rounded-md border bg-card p-4 shadow-md" aria-label="Product Filters">
     <div class="grid gap-4 grid-cols-2 md:grid-cols-[1.5fr_1fr_1fr_auto_auto] md:items-end">
       <div class="grid gap-2 col-span-2 md:col-span-1">
         <Label for="search-input">Search</Label>

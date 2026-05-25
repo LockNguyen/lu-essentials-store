@@ -24,10 +24,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <main class="flex h-full flex-col overflow-hidden">
+  <main class="grid h-full min-h-0 grid-rows-[auto_auto_minmax(0,1fr)_auto] gap-6">
     <!-- Header -->
     <div class="flex items-center justify-between">
-      <h1 class="text-3xl font-extrabold tracking-tight">Products</h1>
+      <h1 class="text-3xl font-extrabold tracking-tight text-primary">Products</h1>
 
       <Button class="shadow-md" size="lg" type="button" @click="isProductFormOpen = true">
         <Plus class="mr-2 h-4 w-4" />
@@ -36,26 +36,22 @@ onMounted(() => {
     </div>
 
     <!-- Filters -->
-    <div class="mt-6 shrink-0">
-      <FilterBar />
-    </div>
+    <FilterBar />
 
     <!-- Scrollable table area -->
-    <div class="mt-6 min-h-0 flex-1">
+    <div class="flex min-h-0 flex-col">
       <LoadingWrapper
         :is-loading="productStore.isAwaitingFetch || productStore.isAwaitingSave"
-        class="flex h-full min-h-0 flex-col overflow-hidden"
+        class="flex h-fit min-h-0 flex-col"
       >
         <ProductTable />
       </LoadingWrapper>
     </div>
 
     <!-- Save panel -->
-    <div class="mt-6 shrink-0">
-      <LoadingWrapper :is-loading="productStore.isAwaitingSave">
-        <SavePanel />
-      </LoadingWrapper>
-    </div>
+    <LoadingWrapper :is-loading="productStore.isAwaitingSave">
+      <SavePanel />
+    </LoadingWrapper>
 
     <ProductForm
       v-if="isProductFormOpen"

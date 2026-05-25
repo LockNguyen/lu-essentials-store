@@ -5,19 +5,19 @@ import Sparky from '@/assets/sparky.jpeg'
 </script>
 
 <template>
-  <header class="sticky top-0 z-50 border-b bg-background/95 backdrop-blur">
+  <header class="sticky top-0 z-50 border-b bg-primary backdrop-blur">
     <nav
       class="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8"
       aria-label="Main Navigation"
     >
       <RouterLink to="/" class="flex items-center gap-3" aria-label="LU Essentials Store Home">
         <div
-          class="flex h-9 w-9 items-center justify-center rounded-lg border bg-card overflow-hidden transition-transform rotate-0 hover:rotate-12"
+          class="flex h-9 w-9 items-center justify-center rounded-lg bg-card overflow-hidden transition-transform rotate-0 hover:rotate-12"
         >
           <img :src="Sparky" alt="" aria-hidden="true" />
         </div>
 
-        <p class="text-lg font-semibold">LU Essentials Store</p>
+        <p class="text-lg font-semibold text-primary-foreground">LU Essentials Store</p>
       </RouterLink>
     </nav>
   </header>
