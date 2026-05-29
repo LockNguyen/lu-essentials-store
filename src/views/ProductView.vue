@@ -39,7 +39,7 @@ onMounted(() => {
     <FilterBar />
 
     <!-- Scrollable table area -->
-    <div class="flex min-h-0 flex-col">
+    <div class="flex min-w-0 min-h-0 flex-col">
       <LoadingWrapper
         :is-loading="productStore.isAwaitingFetch || productStore.isAwaitingSave"
         class="flex h-fit min-h-0 flex-col"

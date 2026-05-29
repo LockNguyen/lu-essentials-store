@@ -21,7 +21,9 @@ const productStore = useProductStore()
 
 <template>
   <section class="rounded-md border bg-card p-4 shadow-md" aria-label="Product Filters">
-    <div class="grid gap-4 grid-cols-2 md:grid-cols-[1.5fr_1fr_1fr_auto_auto] md:items-end">
+    <div
+      class="grid gap-4 grid-cols-2 md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_auto_auto] md:items-end"
+    >
       <div class="grid gap-2 col-span-2 md:col-span-1">
         <Label for="search-input">Search</Label>
 
